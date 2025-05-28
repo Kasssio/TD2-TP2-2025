@@ -342,11 +342,9 @@ struct path* applyHeuristic(struct path* p) {
     struct path* newPath = pathDuplicate(p);
     struct node* prev_i = newPath->first;
     struct node* curr_i = prev_i->next;
-
     while (curr_i != NULL && curr_i != newPath->last) {
         struct node* min_node = curr_i;
         float min_dist = 20000.0f;  // Técnicamente no puedo tener una distancia mayor a esta, así que sería mi techo
-
         struct node* curr_j = curr_i;
         while (curr_j != NULL && curr_j != newPath->last) {
             float dist = distance(prev_i->stop, curr_j->stop);
@@ -362,7 +360,6 @@ struct path* applyHeuristic(struct path* p) {
         prev_i = curr_i;
         curr_i = curr_i->next;
     }
-
     newPath->length = calculateLength(newPath->first);
     return newPath;
 }
