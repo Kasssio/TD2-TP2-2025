@@ -338,21 +338,31 @@ float distance(struct city* c1, struct city* c2) {
 // --- Heuristic ---------------------------------------------------------
 
 struct path* applyHeuristic(struct path* p) {
-    struct node* curr_i = p->first;
-    struct node* curr_j;
-    int min = distance(curr_i->stop,curr_j->stop);
-    while(curr_i != NULL){
-        curr_j = curr_i->next;
-        while(curr_j != NULL){
-            int length = distance(curr_i->stop, curr_j->stop);
-            if(length < min){
-                min = length;
-                pathSwapStops(p, curr_i->stop->name, curr_j->stop->name);
+    if (p == NULL || p->first == NULL || p->first->next == NULL || p->last == NULL || p->first == p->last) return pathDuplicate(p);
+    struct path* newPath = pathDuplicate(p);
+    struct node* prev_i = newPath->first;
+    struct node* curr_i = prev_i->next;
+
+    while (curr_i != NULL && curr_i != newPath->last) {
+        struct node* min_node = curr_i;
+        float min_dist = 20000.0f;  // Técnicamente no puedo tener una distancia mayor a esta, así que sería mi techo
+
+        struct node* curr_j = curr_i;
+        while (curr_j != NULL && curr_j != newPath->last) {
+            float dist = distance(prev_i->stop, curr_j->stop);
+            if (dist < min_dist) {
+                min_dist = dist;
+                min_node = curr_j;
             }
             curr_j = curr_j->next;
         }
+        if (min_node != curr_i) {
+            pathSwapStops(newPath, curr_i->stop->name, min_node->stop->name);
+        }
+        prev_i = curr_i;
         curr_i = curr_i->next;
     }
-    return p;
-    
+
+    newPath->length = calculateLength(newPath->first);
+    return newPath;
 }

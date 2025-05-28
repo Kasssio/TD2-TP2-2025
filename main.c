@@ -52,11 +52,11 @@ int main() {
     struct path* p4 = pathNew();
     struct path* p5 = pathNew();
     pathAddLast(p4,"Hiroshima",34.385,132.455);
+    pathAddLast(p4,"Huelva",37.261,-6.944);
+    pathAddLast(p4,"Hradec Králové",50.209,15.832);
     pathAddLast(p4,"Hobart",-42.882,147.325);
     pathAddLast(p4,"Horta",38.520,-28.600);
     pathAddLast(p4,"Houston",29.760,-95.369);
-    pathAddLast(p4,"Hradec Králové",50.209,15.832);
-    pathAddLast(p4,"Huelva",37.261,-6.944);
     pathAddLast(p4,"Hyderabad",17.385,78.486);
     pathAddFirst(p5,"Zalaegerszeg",46.844,16.840);
 
@@ -101,8 +101,8 @@ int main() {
     printf("---------------------Cambio ciudades p2 y p4-----------------------\n");
     pathSwapStops(p2,"Madrid","Port au Prince");
     pathPrint(p2);
-    pathSwapStops(p4,"Houston","Huelva");
-    pathPrint(p4);
+    // pathSwapStops(p4,"Houston","Huelva");
+    //pathPrint(p4);
     printf("-----------------------Borro primera ciudad---------------------\n");
     pathAddLast(p1,"Lublin",51.246,22.568);
     pathRemoveCity(p1, "Zaragoza");
@@ -125,11 +125,30 @@ int main() {
     printf("------------------Borramos la unica ciudad de p2----------------\n");
     pathPrint(p2);
 
+    struct path* p = pathNew();
+    pathAddLast(p, "A", 1, 1);
+    pathAddLast(p, "E", 5, 5);
+    pathAddLast(p, "D", 4, 4);
+    pathAddLast(p, "C", 3, 3);
+    pathAddLast(p, "B", 2, 2);
+    pathAddLast(p, "F", 6, 6);
+
+
+    printf("Este es p antes: %f\n", p->length);
+    pathPrint(p);
+    struct path* h = applyHeuristic(p);
+    printf("Este es p ahora (creamos la copia en h): %f\n", h->length);
+    pathPrint(h);
+
+
+
     // Borro todo
     pathDelete(p1);
     pathDelete(p2);
     pathDelete(p3);
     pathDelete(p4);
     pathDelete(p5);
+    pathDelete(p);
+    pathDelete(h);
     return 0;
 }
