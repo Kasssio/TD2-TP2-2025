@@ -23,45 +23,44 @@ char* strDup(char* src){
 }
 
 int strCmp(char* a, char* b){
-  int size_a = strLen(a);
-  int size_b = strLen(b);
-  if (size_a == 0 && size_b == 0){
-    return 0;
-  }
-  if(size_a == 0) return 1;
-  if(size_b == 0) return -1;
-  int minima_long = 0;
-  if (size_a < size_b){
-    minima_long = size_a;
-  }
-  else{
-    minima_long = size_b;
-  }
-  int i = 0;
-  int res = 0;
-  while (i < minima_long){
-    if(a[i] < b[i]){
-        res = 1;
-        return res; 
-    }
-    if(a[i]>b[i]){
-        res=-1;
-      return res;
-    }
-    i++;
-  }
-  //si llegamos hasta aca,entonces todos los caracteres son iguales. Por eso, debemos ver el tamaño de cada str 
-  if(size_a<size_b){
-    res=1;
-    return res;
-  }
-  if (size_a>size_b){
-    res=-1;
-    return res;
-  }
-  //si no se cumple ningún if, entonces res sigue siendo 0
-  return res;
-  
+	int size_a = strLen(a);
+  	int size_b = strLen(b);
+  	if (size_a == 0 && size_b == 0){
+    	return 0;
+  	}
+  	if(size_a == 0) return 1;
+  	if(size_b == 0) return -1;
+  	int minima_long = 0;
+  	if (size_a < size_b){
+    	minima_long = size_a;
+  	}
+  	else{
+    	minima_long = size_b;
+  	}
+  	int i = 0;
+  	int res = 0;
+  	while (i < minima_long){
+    	if(a[i] < b[i]){
+        	res = 1;
+        	return res; 
+    	}
+    	if(a[i]>b[i]){
+        	res=-1;
+      		return res;
+    	}
+    	i++;
+  	}
+  	//si llegamos hasta aca,entonces todos los caracteres son iguales. Por eso, debemos ver el tamaño de cada str 
+  	if(size_a<size_b){
+    	res=1;
+    	return res;
+  	}
+  	if (size_a>size_b){
+    	res=-1;
+    	return res;
+  	}
+  	//si no se cumple ningún if, entonces res sigue siendo 0
+  	return res;
 }
 
 struct path* pathNew(){
@@ -73,6 +72,7 @@ struct path* pathNew(){
     return p;
 }
 void pathAddFirst(struct path* p, char* name, float latitude, float longitude) {
+    if (p == NULL) return;
     struct city* newcity = (struct city*) malloc(sizeof(struct city));
     newcity->name = strDup(name);
     newcity->latitude = latitude;
@@ -101,6 +101,7 @@ void pathAddFirst(struct path* p, char* name, float latitude, float longitude) {
     return;
 }
 void pathAddLast(struct path* p, char* name, float latitude, float longitude) {
+	if (p == NULL) return;
     struct city* newcity = (struct city*) malloc(sizeof(struct city));
     newcity->name = strDup(name);
     newcity->latitude = latitude;
@@ -338,28 +339,53 @@ float distance(struct city* c1, struct city* c2) {
 // --- Heuristic ---------------------------------------------------------
 
 struct path* applyHeuristic(struct path* p) {
-    if (p == NULL || p->first == NULL || p->first->next == NULL || p->last == NULL || p->first == p->last) return pathDuplicate(p);
+    // Si el camino original es inválido (nulo, vacío o con una sola ciudad), simplemente se duplica tal cual.
+    if (p == NULL || p->first == NULL || p->first->next == NULL || p->last == NULL || p->first == p->last)
+        return pathDuplicate(p);
+
+    // Se crea una copia del camino original sobre la cual se aplicará la heurística (para no modificar el original).
     struct path* newPath = pathDuplicate(p);
+
+    // Puntero a la ciudad anterior (comienza en la primera ciudad del nuevo camino).
     struct node* prev_i = newPath->first;
+
+    // Puntero a la ciudad actual que se va a intentar optimizar (segunda ciudad en adelante).
     struct node* curr_i = prev_i->next;
+
+    // Se recorre el camino desde la segunda ciudad hasta la penúltima.
     while (curr_i != NULL && curr_i != newPath->last) {
+        // Se asume que la ciudad más cercana es la actual.
         struct node* min_node = curr_i;
-        float min_dist = 20000.0f;  // Técnicamente no puedo tener una distancia mayor a esta, así que sería mi techo
+
+        // Inicializamos una distancia máxima (valor arbitrariamente grande que sabemos que cualquier distancia real va a superar).
+        float min_dist = 20000.0f;
+
+        // Este puntero va a recorrer todas las ciudades restantes desde curr_i en adelante.
         struct node* curr_j = curr_i;
+
+        // Se busca cuál de las ciudades restantes es la más cercana a prev_i.
         while (curr_j != NULL && curr_j != newPath->last) {
-            float dist = distance(prev_i->stop, curr_j->stop);
+            float dist = distance(prev_i->stop, curr_j->stop);  // Distancia entre la ciudad anterior y la ciudad j.
             if (dist < min_dist) {
-                min_dist = dist;
-                min_node = curr_j;
+                min_dist = dist;       // Se actualiza la mínima distancia.
+                min_node = curr_j;     // Y se guarda la ciudad correspondiente.
             }
             curr_j = curr_j->next;
         }
+
+        // Si encontramos una ciudad más cercana que la que estaba en curr_i, las intercambiamos en el camino.
         if (min_node != curr_i) {
             pathSwapStops(newPath, curr_i->stop->name, min_node->stop->name);
         }
+
+        // Avanzamos al siguiente par de ciudades.
         prev_i = curr_i;
         curr_i = curr_i->next;
     }
+
+    // Una vez optimizado el orden, recalculamos la longitud total del camino.
     newPath->length = calculateLength(newPath->first);
+
+    // Devolvemos el nuevo camino heurísticamente mejorado.
     return newPath;
 }
